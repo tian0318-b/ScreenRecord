@@ -85,7 +85,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            Toast.makeText(MainActivity.this, "录屏服务断开！", Toast.LENGTH_SHORT).show();
+            Log.d(tag, "onServiceDisconnected");
         }
     };
 
@@ -108,11 +108,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.sb:
                 if (screenRecordService != null && !screenRecordService.isRunning()) {
                     screenRecordService.startRecord();
-                    Toast.makeText(MainActivity.this, "开始录屏", Toast.LENGTH_SHORT).show();
+                    Log.d(tag, "开始录屏");
                     sb.setText("结束录屏");
                     setToBackground();
                 } else if (screenRecordService != null && screenRecordService.isRunning()) {
                     screenRecordService.stopRecord();
+                    Log.d(tag, "结束录屏");
                     sb.setText("开始录屏");
                 } else if (screenRecordService == null) {
                     connectService();
