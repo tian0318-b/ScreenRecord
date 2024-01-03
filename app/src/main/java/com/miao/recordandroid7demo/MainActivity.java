@@ -13,11 +13,12 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private Button sb;
     private ScreenRecordService screenRecordService;
@@ -25,6 +26,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private MediaProjection mediaProjection;
     private DisplayMetrics metrics;
     private static final int RECORD_REQUEST_CODE = 101;
+    private final String tag = "ScreenRecordService";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +60,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == 1101) {
             if (grantResults.length != 0 && ((grantResults[0] != PackageManager.PERMISSION_GRANTED) || (grantResults[1] != PackageManager.PERMISSION_GRANTED))) {
-                Toast.makeText(MainActivity.this,"请设置必须的应用权限，否则将会导致运行异常！",Toast.LENGTH_SHORT).show();
+                Log.e(tag, "请设置必须的应用权限，否则将会导致运行异常！");
             } else if (grantResults.length != 0 && (grantResults[0] == PackageManager.PERMISSION_GRANTED) && (grantResults[1] == PackageManager.PERMISSION_GRANTED)) {
                 connectService();
             }
@@ -83,7 +85,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            Toast.makeText(MainActivity.this,"录屏服务断开！",Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "录屏服务断开！", Toast.LENGTH_SHORT).show();
         }
     };
 
@@ -102,14 +104,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
+        switch (v.getId()) {
             case R.id.sb:
                 if (screenRecordService != null && !screenRecordService.isRunning()) {
                     screenRecordService.startRecord();
-                    Toast.makeText(MainActivity.this,"开始录屏",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "开始录屏", Toast.LENGTH_SHORT).show();
                     sb.setText("结束录屏");
                     setToBackground();
-                }else if (screenRecordService != null && screenRecordService.isRunning()) {
+                } else if (screenRecordService != null && screenRecordService.isRunning()) {
                     screenRecordService.stopRecord();
                     sb.setText("开始录屏");
                 } else if (screenRecordService == null) {
@@ -119,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void setToBackground(){
+    private void setToBackground() {
         Intent home = new Intent(Intent.ACTION_MAIN);
         home.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         home.addCategory(Intent.CATEGORY_HOME);

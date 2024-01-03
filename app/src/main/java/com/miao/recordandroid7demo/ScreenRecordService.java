@@ -10,6 +10,7 @@ import android.os.Binder;
 import android.os.Environment;
 import android.os.HandlerThread;
 import android.os.IBinder;
+import android.util.Log;
 import android.widget.Toast;
 
 import java.io.File;
@@ -27,6 +28,7 @@ public class ScreenRecordService extends Service {
     private int dpi;
 
     private String videoPath = "";
+    private final String tag = "ScreenRecordService";
 
     @Override
     public void onCreate() {
@@ -77,21 +79,20 @@ public class ScreenRecordService extends Service {
         this.dpi = dpi;
     }
 
-    public boolean startRecord() {
+    public void startRecord() {
         if (mediaProjection == null || running) {
-            return false;
+            return;
         }
         initRecorder();
         createVirtualDisplay();
         try {
             mediaRecorder.start();
             running = true;
-            return true;
         }catch (IllegalStateException e){
             e.printStackTrace();
-            Toast.makeText(this,"start 出错，录屏失败！",Toast.LENGTH_SHORT).show();
+            Toast.makeText(this,"",Toast.LENGTH_SHORT).show();
+            Log.e(tag, "startRecord failed" + e.getMessage());
             running = false;
-            return false;
         }
     }
 
@@ -106,10 +107,10 @@ public class ScreenRecordService extends Service {
             virtualDisplay.release();
         }catch (Exception e){
             e.printStackTrace();
-            Toast.makeText(ScreenRecordService.this, "录屏出错,保存失败", Toast.LENGTH_SHORT).show();
+            Log.e(tag, "stopRecord failed" + e.getMessage());
             return false;
         }
-        Toast.makeText(ScreenRecordService.this, "录屏完成，已保存。", Toast.LENGTH_SHORT).show();
+        Log.d(tag, "stopRecord success | videoPath: " + videoPath);
         return true;
     }
 
@@ -118,7 +119,7 @@ public class ScreenRecordService extends Service {
             virtualDisplay = mediaProjection.createVirtualDisplay("MainScreen", width, height, dpi,
                     DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR, mediaRecorder.getSurface(), null, null);
         }catch (Exception e){
-            Toast.makeText(this,"virtualDisplay 录屏出错！",Toast.LENGTH_SHORT).show();
+            Log.e(tag, "createVirtualDisplay failed" + e.getMessage());
         }
     }
 
@@ -132,6 +133,7 @@ public class ScreenRecordService extends Service {
         mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
         //设置视频储存地址
         videoPath = getSaveDirectory() + System.currentTimeMillis() + ".mp4";
+        Log.d(tag, "videoPath: " + videoPath);
         mediaRecorder.setOutputFile(videoPath);
         //设置视频大小
         mediaRecorder.setVideoSize(width, height);
@@ -153,7 +155,7 @@ public class ScreenRecordService extends Service {
     public String getSaveDirectory() {
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             String rootDir = Environment.getExternalStorageDirectory()
-                    .getAbsolutePath() + "/" + "手机录屏助手/" + "/";
+                    .getAbsolutePath() + "/" + "ScreenRecord" + "/";
             File file = new File(rootDir);
             if (!file.exists()) {
                 if (!file.mkdirs()) {
